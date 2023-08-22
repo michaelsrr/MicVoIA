@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="shortcut icon" href="https://creadn.com.co/assets/img/icono.png">
+    <meta charset="UTF-8">
+    <title>Voice Emotion Detection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <h1>Deteccion Emociones Voz</h1>
+    <input type="file" id="audioFile" accept=".wav">
+    <button onclick="uploadAudio()">Detectar Emoción</button>
+    <p id="result"></p>
+    <div id="gifContainer"></div>
+    <button onclick="recordAndDetect()">Grabar y Detectar Emoción</button>
+
+    <script>
+        function recordAndDetect() {
+            const formData = new FormData();
+
+            $.ajax({
+                url: '/realtime',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    displayResult(response);
+                },
+                error: function (error) {
+                    alert('Error al grabar y detectar la emoción: ' + error.responseText);
+                }
+            });
+        }
+
+        function uploadAudio() {
+            const audioFile = document.getElementById('audioFile').files[0];
+            if (!audioFile) {
+                alert('Por favor, selecciona un archivo de audio.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', audioFile);
+
+            $.ajax({
+                url: '/upload',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    displayResult(response);
+                },
+                error: function (error) {
+                    alert('Error al enviar el audio al servidor: ' + error.responseText);
+                }
+            });
+        }
+
+        function displayResult(response) {
+            const resultContainer = document.getElementById('result');
+            resultContainer.innerHTML = `Emoción detectada: ${response.emotion} (Probabilidad: ${response.probability.toFixed(2)})`;
+
+            const gifContainer = document.getElementById('gifContainer');
+            gifContainer.innerHTML = `<img src="${response.gif_url}" alt="GIF de la emoción" width="200">`;
+        }
+    </script>
+</body>
+
+</html>
